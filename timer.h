@@ -15,7 +15,7 @@ inline std::deque<TimerEvent> events;
 class Timer {
   public:
     Timer(const char *name)
-        : m_name(name), m_start(std::chrono::high_resolution_clock::now()) {};
+        : m_name(name), m_start(std::chrono::high_resolution_clock::now()){};
 
     ~Timer() {
         using namespace std::chrono;
@@ -50,13 +50,15 @@ inline void generateRaport(const std::string &fileName = "events.json") {
 
     for (uint32_t i = 0; i < events.size(); i++) {
         const auto &e = events.at(i);
-        file << "{";
-        file << "\"name\":\"" << e.name << "\",";
-        file << "\"sf\": 1,";
-        file << "\"ph\":\"X\",";
-        file << "\"pid\":1,\"tid\":1,";
-        file << "\"ts\":" << e.start - startOffset << ",";
-        file << "\"dur\":" << e.duration;
+        file << "{\"name\":\"" << e.name
+             << "\","
+                "\"sf\": 1,"
+                "\"ph\":\"X\","
+                "\"pid\":1,\"tid\":1,"
+                "\"ts\":";
+    
+        file << e.start - startOffset;
+        file << ",\"dur\":" << e.duration;
 
         if (i == events.size() - 1) {
             file << "}";
@@ -66,9 +68,6 @@ inline void generateRaport(const std::string &fileName = "events.json") {
     }
 
     file << "]}";
-    file << "";
-
-    file.close();
 }
 
 #define CONCAT_(a, b) a##b
