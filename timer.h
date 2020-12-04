@@ -1,5 +1,12 @@
 #pragma once
 
+// #define USE_FMT
+
+#ifdef USE_FMT
+#include <fmt/compile.h>
+#include <fmt/os.h>
+#endif
+
 #include <chrono>
 #include <deque>
 #include <fstream>
@@ -44,6 +51,26 @@ inline void generateRaport(const std::string &fileName = "events.json") {
         }
     }
 
+
+#ifdef USE_FMT
+    auto out = fmt::output_file(fileName);
+    out.print("{{ \"traceEvents\": [");
+
+    for (uint32_t i = 0; i < events.size(); i++) {
+        const auto &e = events.at(i);
+        out.print(FMT_COMPILE("{{\"name\":\"{}\",\"sf\": "
+                  "1,\"ph\":\"X\",\"pid\":1,\"tid\":1,\"ts\":{},\"dur\":{}"),
+                  e.name, e.start - startOffset, e.duration);
+
+        if (i == events.size() - 1) {
+            out.print("}}");
+        } else {
+            out.print("}},");
+        }
+    }
+    out.print("]}}");
+
+#else
     std::ofstream file(fileName, std::ios::out);
 
     file << "{ \"traceEvents\": [";
@@ -56,7 +83,7 @@ inline void generateRaport(const std::string &fileName = "events.json") {
                 "\"ph\":\"X\","
                 "\"pid\":1,\"tid\":1,"
                 "\"ts\":";
-    
+
         file << e.start - startOffset;
         file << ",\"dur\":" << e.duration;
 
@@ -66,8 +93,8 @@ inline void generateRaport(const std::string &fileName = "events.json") {
             file << "},";
         }
     }
-
     file << "]}";
+#endif
 }
 
 #define CONCAT_(a, b) a##b
